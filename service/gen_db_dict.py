@@ -5,17 +5,19 @@
 @time: 2019/5/12.
 @desc: 生成数据库字段服务类
 """
-import mysql
+import os
 from flask import request, render_template
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from jinja2 import Environment, PackageLoader, select_autoescape
 
+from app_path import AppPath
 from base.basic import BasicService
 from dto.table_column_dto import TableColumnDto
 from dto.table_dto import TableDto
 from helper.db_helper import DbHelper
+from helper.sys_conf_helper import SysConfHelper
 from statement.mysql_sql_statement import MysqlSqlStatement
 from tools.assert_util import AssertUtils
+from tools.date_utils import DateUtils
 from tools.log_util import info
 
 
@@ -91,12 +93,39 @@ class GenDbDictService(BasicService):
             )
             for tci, table_columns_rows in enumerate(tables_columns_result_set):
                 print(table_columns_rows)
-                # table.columns.append(TableColumnDto(
-                #     name=table_columns_rows[0]
-                #     comment=table_columns_rows[8]
-                # ))
+                table.columns.append(TableColumnDto(
+                    name=table_columns_rows[0],
+                    comment=table_columns_rows[8],
+                    nullable=table_columns_rows[3],
+                    pk=table_columns_rows[4] == 'PRI',
+                    length=GenDbDictService.get_table_column_len(table_columns_rows[1]),
+                    types=table_columns_rows[1]
+                ))
             tables.append(table)
 
-        print(tables)
+        env = Environment(
+            loader=PackageLoader('generate-db-dict', 'templates'),
+            autoescape=select_autoescape(['html'])
+        )
+        template = env.get_template('db_dict.html')
+
+        fname = AppPath.get_project_root_path() + "/output/" + DateUtils.get_current_time()
+
+        try:
+            f = open(AppPath.get_project_root_path() + "/output/" + fname)
+
+            f.write(template.render(tables=tables))
+        finally:
+            print('finally')
+            # os.remove(fname)
 
         return render_template('gen_db_dict.html')
+
+    @staticmethod
+    def get_table_column_len(type_len_str):
+        if not type_len_str:
+            return ''
+        if type_len_str.find('(') == -1:
+            return ''
+        return type_len_str[(type_len_str.find('(') + 1)
+                            :type_len_str.find(')')]

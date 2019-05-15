@@ -12,7 +12,13 @@ class TableColumnDto:
     def __init__(self, name, comment, nullable, types, pk, length):
         self.name = name
         self.comment = comment
-        self.nullable = nullable
         self.types = types
-        self.pk = pk
         self.length = length
+        if nullable == 'NO':
+            self.nullable = '否'
+        else:
+            self.nullable = '是'
+        if pk == 'YES':
+            self.pk = '是'
+        else:
+            self.pk = '否'
