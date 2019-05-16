@@ -37,4 +37,4 @@ http://127.0.0.7:5000/
 
 
 ```
-![预览界面](https://github.com/liuhuakun/BrushShots/blob/master/1.PNG)
+![预览界面](https://github.com/lazy-share/generate-db-dict/blob/master/images/success.png)
