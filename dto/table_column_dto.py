@@ -18,7 +18,4 @@ class TableColumnDto:
             self.nullable = '否'
         else:
             self.nullable = '是'
-        if pk == 'YES':
-            self.pk = '是'
-        else:
-            self.pk = '否'
+        self.pk = pk

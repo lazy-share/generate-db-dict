@@ -6,7 +6,8 @@
 @desc: 生成数据库字段服务类
 """
 import os
-from flask import request, render_template
+
+from flask import request, render_template, send_from_directory, Response
 from jinja2 import Environment, PackageLoader, select_autoescape
 
 from app_path import AppPath
@@ -14,11 +15,10 @@ from base.basic import BasicService
 from dto.table_column_dto import TableColumnDto
 from dto.table_dto import TableDto
 from helper.db_helper import DbHelper
-from helper.sys_conf_helper import SysConfHelper
 from statement.mysql_sql_statement import MysqlSqlStatement
 from tools.assert_util import AssertUtils
-from tools.date_utils import DateUtils
 from tools.log_util import info
+from tools.uuid_utils import UuidUtils
 
 
 class GenDbDictService(BasicService):
@@ -91,16 +91,17 @@ class GenDbDictService(BasicService):
             tables_columns_result_set = session.execute(
                 sql_statement.load_columns().format(table=table_rows[0])
             )
+            columns = []
             for tci, table_columns_rows in enumerate(tables_columns_result_set):
-                print(table_columns_rows)
-                table.columns.append(TableColumnDto(
+                columns.append(TableColumnDto(
                     name=table_columns_rows[0],
                     comment=table_columns_rows[8],
                     nullable=table_columns_rows[3],
-                    pk=table_columns_rows[4] == 'PRI',
+                    pk='主键' if table_columns_rows[4] == 'PRI' else '',
                     length=GenDbDictService.get_table_column_len(table_columns_rows[1]),
                     types=table_columns_rows[1]
                 ))
+            table.columns = columns
             tables.append(table)
 
         env = Environment(
@@ -109,17 +110,10 @@ class GenDbDictService(BasicService):
         )
         template = env.get_template('db_dict.html')
 
-        fname = AppPath.get_project_root_path() + "/output/" + DateUtils.get_current_time()
+        response = Response(template.render(tables=tables), content_type='application/octet-stream')
+        response.headers["Content-disposition"] = 'attachment; filename=%s' % UuidUtils.gen_uuid() + '.doc'
 
-        try:
-            f = open(AppPath.get_project_root_path() + "/output/" + fname)
-
-            f.write(template.render(tables=tables))
-        finally:
-            print('finally')
-            # os.remove(fname)
-
-        return render_template('gen_db_dict.html')
+        return response
 
     @staticmethod
     def get_table_column_len(type_len_str):
@@ -127,5 +121,6 @@ class GenDbDictService(BasicService):
             return ''
         if type_len_str.find('(') == -1:
             return ''
+
         return type_len_str[(type_len_str.find('(') + 1)
                             :type_len_str.find(')')]
