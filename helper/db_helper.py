@@ -32,7 +32,7 @@ class DbHelper:
         info('DbHelper', 'begin init database {0}'.format(uri))
 
         # 初始化数据库连接:
-        engine = create_engine('mysql+mysqlconnector://root:@localhost:3306/lazy_admin')
+        engine = create_engine(uri)
         # 创建DBSession类型:
         db_session = sessionmaker(bind=engine)
         # 创建session对象:
