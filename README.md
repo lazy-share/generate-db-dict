@@ -37,3 +37,4 @@ http://127.0.0.7:5000/
 
 
 ```
+![预览界面](https://github.com/liuhuakun/BrushShots/blob/master/1.PNG)
