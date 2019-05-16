@@ -107,3 +107,7 @@ http://ip:5000
 
 
 ![预览界面](https://github.com/lazy-share/generate-db-dict/blob/master/images/success.png)
+
+## 关注我
+
+![微信公众号](https://github.com/lazy-share/generate-db-dict/blob/master/images/weixin.jpg)
